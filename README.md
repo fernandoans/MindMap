@@ -29,7 +29,6 @@ Aplicação web interativa para criação, edição e visualização de mapas me
 - **[Tailwind CSS](https://tailwindcss.com/)**: Estilização moderna e responsiva.
 - **[Shadcn UI](https://ui.shadcn.com/) / Radix UI**: Componentes de interface (Dropdown Menu, Buttons).
 - **[Lucide React](https://lucide.dev/)**: Conjunto de ícones vetoriais.
-
 ---
 
 ## 📦 Estrutura do Projeto
@@ -45,3 +44,12 @@ src/
 ├── utils.ts                       # Utilitários para cálculos geométricos das linhas flutuantes
 ├── App.tsx                        # Componente principal e configuração do React Flow
 └── main.tsx                       # Ponto de entrada da aplicação
+```
+
+## Executar o projeto
+
+1. Clonar o projeto do Git
+2. Na pasta executar o comando: npm install, para baixar as bibliotecas
+3. Executar o comando: npm run dev.
+
+Acessar o endereço: http://localhost:5173/

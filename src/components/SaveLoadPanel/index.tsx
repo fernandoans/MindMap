@@ -1,35 +1,54 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { useReactFlow, ReactFlowJsonObject } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Download, Upload } from 'lucide-react';
 
 export default function SaveLoadPanel() {
   const { toObject, setNodes, setEdges, setViewport } = useReactFlow();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mapTitle, setMapTitle] = useState('Meu Mapa Mental');
+
+  // Atualiza o título da aba do navegador sempre que o usuário altera o título do mapa
+  useEffect(() => {
+    document.title = mapTitle ? mapTitle : 'Mapa Mental';
+  }, [mapTitle]);
 
   // 1. SALVAR EM ARQUIVO JSON
   const onSave = useCallback(() => {
-    // Obtém o estado atual contendo { nodes, edges, viewport }
     const flow = toObject();
     const jsonString = JSON.stringify(flow, null, 2);
 
-    // Cria um Blob e dispara o download do arquivo
+    // Formata o nome do arquivo a partir do título (ex: "Meu Mapa Mental" -> "meu-mapa-mental.json")
+    const formattedFileName = mapTitle
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9à-ú\s-]/gi, '')
+      .replace(/\s+/g, '-');
+
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `flow-state-${Date.now()}.json`;
+    link.download = `${formattedFileName || 'mapa-mental'}.json`;
     link.click();
 
-    // Limpa a URL criada da memória
     URL.revokeObjectURL(url);
-  }, [toObject]);
+  }, [toObject, mapTitle]);
 
   // 2. RESTAURAR A PARTIR DE UM ARQUIVO JSON
   const onLoad = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
+
+      // Define o título do mapa com base no nome do arquivo carregado (sem a extensão .json)
+      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, '');
+      const formattedTitleFromFilename = fileNameWithoutExtension
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
+      setMapTitle(formattedTitleFromFilename);
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -39,7 +58,6 @@ export default function SaveLoadPanel() {
           );
 
           if (flow) {
-            // Restaura os nós, conexões e a posição do zoom/pan da câmera
             setNodes(flow.nodes || []);
             setEdges(flow.edges || []);
             if (flow.viewport) {
@@ -48,22 +66,34 @@ export default function SaveLoadPanel() {
             }
           }
         } catch (error) {
-          alert('Erro ao ler o arquivo JSON. Certifique-se de que é um formato válido.');
+          alert('Erro ao ler o arquivo JSON.');
           console.error(error);
         }
       };
 
       reader.readAsText(file);
-
-      // Reseta o input para permitir carregar o mesmo arquivo novamente se necessário
       event.target.value = '';
     },
     [setNodes, setEdges, setViewport]
   );
 
   return (
-    <div className="fixed top-5 right-5 z-10 flex gap-2 bg-white/80 p-2 rounded-lg shadow-md backdrop-blur border border-gray-200">
-      <Button onClick={onSave} size="sm" variant="outline" className="flex gap-1 items-center">
+    <div className="fixed top-5 right-5 z-10 flex gap-2 items-center bg-white/90 p-2 rounded-lg shadow-md backdrop-blur border border-gray-200">
+      {/* Campo para o título do mapa */}
+      <Input
+        type="text"
+        value={mapTitle}
+        onChange={(e) => setMapTitle(e.target.value)}
+        placeholder="Título do Mapa..."
+        className="w-48 h-8 text-sm border-gray-300 focus-visible:ring-1"
+      />
+
+      <Button
+        onClick={onSave}
+        size="sm"
+        variant="outline"
+        className="flex gap-1 items-center h-8"
+      >
         <Download className="w-4 h-4" />
         Salvar
       </Button>
@@ -72,7 +102,7 @@ export default function SaveLoadPanel() {
         onClick={() => fileInputRef.current?.click()}
         size="sm"
         variant="outline"
-        className="flex gap-1 items-center"
+        className="flex gap-1 items-center h-8"
       >
         <Upload className="w-4 h-4" />
         Carregar
