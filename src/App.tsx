@@ -77,7 +77,6 @@ export default function App() {
           <Background color="#ccc" variant={BackgroundVariant.Dots} />
         </ReactFlow>
       </div>
-      <ButtonAdd />
     </ReactFlowProvider>
   );
 }

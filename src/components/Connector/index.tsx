@@ -31,25 +31,36 @@ function TextUpdaterNode({ id, data }: TextUpdaterNodeProps) {
     );
   }, [id, setNodes, setEdges]);
 
-  const onCreate = useCallback(() => {
+const onCreate = useCallback(() => {
     const currentNode = getNode(id);
     if (!currentNode) return;
 
     const newNodeId = `node_${Date.now()}`;
 
+    // 1. Criação do Novo Nó Filho
     const newNode: Node = {
       id: newNodeId,
-      type: currentNode.type || 'default',
+      type: currentNode.type || 'textUpdater',
       position: {
         x: currentNode.position.x,
-        y: currentNode.position.y + 120,
+        y: currentNode.position.y + 120, // Posiciona logo abaixo do pai
       },
       data: {
         label: `Novo Nó (${newNodeId.slice(-4)})`,
       },
     };
+
+    // 2. Criação do Edge amarrando o nó pai ao filho com o tipo 'floating'
+    const newEdge = {
+      id: `edge_${id}_to_${newNodeId}`,
+      source: id,
+      target: newNodeId,
+      type: 'floating', // <--- Isso garante que usará o seu FloatingEdge
+    };
+
     setNodes((nds) => [...nds, newNode]);
-  }, [id, getNode, setNodes]);
+    setEdges((eds) => [...eds, newEdge]);
+  }, [id, getNode, setNodes, setEdges]);
 
   const onEdit = useCallback(() => {
     const newLabel = window.prompt('Digite o novo texto para o nó:', data?.label);

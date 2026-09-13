@@ -20,9 +20,11 @@ import { useEffect, useRef, useState } from 'react';
 
 function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
   const { setEdges } = useReactFlow();
-  const [color, setColor] = useState('#818181');
   const [isHovered, setIsHovered] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Obtém a cor atual a partir de style.stroke ou usa o padrão #818181
+  const currentColor = style?.stroke || '#818181';
 
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
@@ -49,6 +51,24 @@ function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
     setEdges((edges) => edges.filter((edge) => edge.id !== id));
   };
 
+  // Função atualizada para salvar a cor diretamente na Edge do React Flow
+  const onColorChange = (newColor: string) => {
+    setEdges((edges) =>
+      edges.map((edge) => {
+        if (edge.id === id) {
+          return {
+            ...edge,
+            style: {
+              ...edge.style,
+              stroke: newColor,
+            },
+          };
+        }
+        return edge;
+      })
+    );
+  };
+
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
@@ -72,18 +92,16 @@ function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
 
   return (
     <>
-      {/* 1. O path agora é fechado corretamente como elemento SVG */}
       <path
         id={id}
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}
-        style={{ stroke: color, ...style }}
+        style={{ ...style, stroke: currentColor }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       />
 
-      {/* 2. O HTML customizado fica fora da tag path */}
       {isHovered && (
         <EdgeLabelRenderer>
           <div
@@ -97,7 +115,6 @@ function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            {/* 3. Estrutura completa do DropdownMenu com Trigger */}
             <DropdownMenu>
               <DropdownMenuTrigger className="bg-gray-600 p-1 rounded-full text-white hover:bg-gray-700 transition-colors">
                 <Ellipsis className="h-4 w-4" />
@@ -119,7 +136,7 @@ function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
                       key={c}
                       style={{ backgroundColor: c }}
                       className="w-6 h-6 rounded-full border border-gray-300 hover:scale-110 transition-transform"
-                      onClick={() => setColor(c)}
+                      onClick={() => onColorChange(c)}
                     />
                   ))}
                 </div>
