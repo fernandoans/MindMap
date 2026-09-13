@@ -53,3 +53,5 @@ src/
 3. Executar o comando: npm run dev.
 
 Acessar o endereço: http://localhost:5173/
+
+![Tela inicial da Aplicação](./telainicial.png)
