@@ -36,7 +36,6 @@ Aplicação web interativa para criação, edição e visualização de mapas me
 ```text
 src/
 ├── components/
-│   ├── ButtonAdd.tsx              # Botão flutuante para adicionar novos nós no centro da tela
 │   ├── Connector.tsx              # Componente do Nó customizado (estilo mapa mental)
 │   ├── FloatingConnectionLine.tsx # Linha guia temporária durante a criação de conexões
 │   ├── FloatingEdge.tsx           # Linha de conexão customizada com menu de troca de cor
@@ -48,10 +47,21 @@ src/
 
 ## Executar o projeto
 
-1. Clonar o projeto do Git
-2. Na pasta executar o comando: npm install, para baixar as bibliotecas
-3. Executar o comando: npm run dev.
+Após clonar o projeto do Git você possui 2 opções para executar o projeto.
 
-Acessar o endereço: http://localhost:5173/
+
+### A. Executar o projeto localmente
+
+1. Na pasta executar o comando: npm install, para baixar as bibliotecas
+2. Executar o comando: npm run dev.
+
+Acessar no endereço: http://localhost:5173/
 
 ![Tela inicial da Aplicação](./telainicial.png)
+
+### B. Via Docker
+
+1. docker build -t mindmap-app .
+2. docker run -d -p 8080:80 --name meu-mindmap mindmap-app
+
+Acessar no endereço: http://localhost:8080/

@@ -14,7 +14,6 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import TextUpdaterNode from './components/Connector';
-import ButtonAdd from './components/ButtonAdd';
 import { createNodesAndEdges } from './utils';
 import FloatingEdge from './components/FloatingEdge';
 import FloatingConnectionLine from './components/FloatingConnectionLine';
