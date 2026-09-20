@@ -1,13 +1,20 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { useReactFlow, ReactFlowJsonObject } from '@xyflow/react';
+import {
+  useReactFlow,
+  ReactFlowJsonObject,
+  getNodesBounds,
+  getViewportForBounds,
+} from '@xyflow/react';
+import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 export default function SaveLoadPanel() {
-  const { toObject, setNodes, setEdges, setViewport } = useReactFlow();
+  const { toObject, setNodes, setEdges, setViewport, getNodes } = useReactFlow();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mapTitle, setMapTitle] = useState('Meu Mapa Mental');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Atualiza o título da aba do navegador sempre que o usuário altera o título do mapa
   useEffect(() => {
@@ -77,6 +84,76 @@ export default function SaveLoadPanel() {
     [setNodes, setEdges, setViewport]
   );
 
+  // 3. EXPORTAR COMO IMAGEM PNG
+  const onExportPng = useCallback(async () => {
+    const nodes = getNodes();
+    if (!nodes || nodes.length === 0) {
+      alert('Não há nós no mapa mental para exportar.');
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+
+      const nodesBounds = getNodesBounds(nodes);
+
+      // Margem em torno dos nós para a imagem não ficar rente às bordas
+      const padding = 60;
+      const imageWidth = Math.max(
+        1024,
+        Math.round(nodesBounds.width + padding * 2)
+      );
+      const imageHeight = Math.max(
+        768,
+        Math.round(nodesBounds.height + padding * 2)
+      );
+
+      const viewport = getViewportForBounds(
+        nodesBounds,
+        imageWidth,
+        imageHeight,
+        0.1,
+        2,
+        0.1
+      );
+
+      const viewportElement = document.querySelector(
+        '.react-flow__viewport'
+      ) as HTMLElement;
+
+      if (!viewportElement) {
+        throw new Error('Elemento da viewport do React Flow não encontrado.');
+      }
+
+      const formattedFileName = mapTitle
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9à-ú\s-]/gi, '')
+        .replace(/\s+/g, '-');
+
+      const dataUrl = await toPng(viewportElement, {
+        backgroundColor: '#ffffff',
+        width: imageWidth,
+        height: imageHeight,
+        style: {
+          width: `${imageWidth}px`,
+          height: `${imageHeight}px`,
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+        },
+      });
+
+      const link = document.createElement('a');
+      link.download = `${formattedFileName || 'mapa-mental'}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('Erro ao exportar PNG:', error);
+      alert('Ocorreu um erro ao exportar o mapa mental como PNG.');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [getNodes, mapTitle]);
+
   return (
     <div className="fixed top-5 right-5 z-10 flex gap-2 items-center bg-white/90 p-2 rounded-lg shadow-md backdrop-blur border border-gray-200">
       {/* Campo para o título do mapa */}
@@ -93,9 +170,26 @@ export default function SaveLoadPanel() {
         size="sm"
         variant="outline"
         className="flex gap-1 items-center h-8"
+        title="Salvar projeto em arquivo JSON"
       >
         <Download className="w-4 h-4" />
         Salvar
+      </Button>
+
+      <Button
+        onClick={onExportPng}
+        disabled={isExporting}
+        size="sm"
+        variant="outline"
+        className="flex gap-1 items-center h-8"
+        title="Exportar mapa como imagem PNG"
+      >
+        {isExporting ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <ImageIcon className="w-4 h-4" />
+        )}
+        {isExporting ? 'Exportando...' : 'Exportar PNG'}
       </Button>
 
       <Button
@@ -103,6 +197,7 @@ export default function SaveLoadPanel() {
         size="sm"
         variant="outline"
         className="flex gap-1 items-center h-8"
+        title="Carregar projeto a partir de arquivo JSON"
       >
         <Upload className="w-4 h-4" />
         Carregar

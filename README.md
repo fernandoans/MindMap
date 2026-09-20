@@ -39,7 +39,8 @@ src/
 │   ├── Connector.tsx              # Componente do Nó customizado (estilo mapa mental)
 │   ├── FloatingConnectionLine.tsx # Linha guia temporária durante a criação de conexões
 │   ├── FloatingEdge.tsx           # Linha de conexão customizada com menu de troca de cor
-│   └── SaveLoadPanel.tsx          # Painel para exportar e importar o JSON do fluxo
+│   ├── SaveLoadPanel.tsx          # Painel para exportar e importar o JSON do fluxo e imagem PNG
+│   └── ui/                        # Componentes essenciais
 ├── utils.ts                       # Utilitários para cálculos geométricos das linhas flutuantes
 ├── App.tsx                        # Componente principal e configuração do React Flow
 └── main.tsx                       # Ponto de entrada da aplicação
@@ -48,7 +49,6 @@ src/
 ## Executar o projeto
 
 Após clonar o projeto do Git você possui 2 opções para executar o projeto.
-
 
 ### A. Executar o projeto localmente
 
