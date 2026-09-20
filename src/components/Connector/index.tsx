@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { Handle, Position, useReactFlow, Node } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
+import { useMindMap } from '../../context/MindMapContext';
 
 import {
   DropdownMenu,
@@ -19,69 +20,27 @@ interface TextUpdaterNodeProps {
   data: {
     label: string;
   };
+  selected?: boolean;
 }
 
-function TextUpdaterNode({ id, data }: TextUpdaterNodeProps) {
-  const { setNodes, setEdges, getNode } = useReactFlow();
+function TextUpdaterNode({ id, data, selected }: TextUpdaterNodeProps) {
+  const { addChildNode, deleteNode, updateNodeLabel } = useMindMap();
 
   const onDelete = useCallback(() => {
-    setNodes((nodes) => nodes.filter((node) => node.id !== id));
-    setEdges((edges) =>
-      edges.filter((edge) => edge.source !== id && edge.target !== id)
-    );
-  }, [id, setNodes, setEdges]);
+    deleteNode(id);
+  }, [id, deleteNode]);
 
-const onCreate = useCallback(() => {
-    const currentNode = getNode(id);
-    if (!currentNode) return;
-
-    const newNodeId = `node_${Date.now()}`;
-
-    // 1. Criação do Novo Nó Filho
-    const newNode: Node = {
-      id: newNodeId,
-      type: currentNode.type || 'textUpdater',
-      position: {
-        x: currentNode.position.x,
-        y: currentNode.position.y + 120, // Posiciona logo abaixo do pai
-      },
-      data: {
-        label: `Novo Nó (${newNodeId.slice(-4)})`,
-      },
-    };
-
-    // 2. Criação do Edge amarrando o nó pai ao filho com o tipo 'floating'
-    const newEdge = {
-      id: `edge_${id}_to_${newNodeId}`,
-      source: id,
-      target: newNodeId,
-      type: 'floating', // <--- Isso garante que usará o seu FloatingEdge
-    };
-
-    setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [...eds, newEdge]);
-  }, [id, getNode, setNodes, setEdges]);
+  const onCreate = useCallback(() => {
+    addChildNode(id);
+  }, [id, addChildNode]);
 
   const onEdit = useCallback(() => {
     const newLabel = window.prompt('Digite o novo texto para o nó:', data?.label);
 
     if (newLabel !== null && newLabel.trim() !== '') {
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                label: newLabel,
-              },
-            };
-          }
-          return node;
-        })
-      );
+      updateNodeLabel(id, newLabel);
     }
-  }, [id, data?.label, setNodes]);
+  }, [id, data?.label, updateNodeLabel]);
 
   return (
     <>
@@ -97,7 +56,13 @@ const onCreate = useCallback(() => {
       />
 
       {/* Container ovalado e dinâmico */}
-      <div className="w-max min-w-[120px] max-w-[400px] flex items-center justify-between gap-3 px-6 py-3 rounded-full bg-white border-2 border-slate-700 shadow-md hover:shadow-lg transition-all">
+      <div
+        className={`w-max min-w-[120px] max-w-[400px] flex items-center justify-between gap-3 px-6 py-3 rounded-full bg-white border-2 shadow-md hover:shadow-lg transition-all ${
+          selected
+            ? 'border-blue-600 ring-4 ring-blue-100 shadow-blue-200'
+            : 'border-slate-700'
+        }`}
+      >
         <div className="flex items-center justify-center font-medium text-slate-800 text-sm whitespace-pre-wrap break-words">
           {data?.label}
         </div>
@@ -109,7 +74,7 @@ const onCreate = useCallback(() => {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onCreate}>
               <Folder className="mr-2 h-4 w-4" />
-              Novo
+              Novo Filho (Tab)
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onEdit}>
               <Pencil className="mr-2 h-4 w-4" />
@@ -117,7 +82,7 @@ const onCreate = useCallback(() => {
             </DropdownMenuItem>
             <DropdownMenuItem className="text-red-600" onClick={onDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Excluir
+              Excluir (Del)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

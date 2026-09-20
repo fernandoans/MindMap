@@ -3,10 +3,10 @@ import {
   EdgeProps,
   getBezierPath,
   useInternalNode,
-  useReactFlow,
 } from '@xyflow/react';
 
 import { getEdgeParams } from '../../utils.js';
+import { useMindMap } from '../../context/MindMapContext';
 
 import { Ellipsis, Trash2 } from 'lucide-react';
 import {
@@ -19,7 +19,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
-  const { setEdges } = useReactFlow();
+  const { deleteEdge, updateEdgeColor } = useMindMap();
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -48,25 +48,12 @@ function FloatingEdge({ id, source, target, markerEnd, style }: EdgeProps) {
   });
 
   const onEdgeDeleteClick = () => {
-    setEdges((edges) => edges.filter((edge) => edge.id !== id));
+    deleteEdge(id);
   };
 
-  // Função atualizada para salvar a cor diretamente na Edge do React Flow
+  // Função para salvar a cor diretamente na Edge com suporte a histórico
   const onColorChange = (newColor: string) => {
-    setEdges((edges) =>
-      edges.map((edge) => {
-        if (edge.id === id) {
-          return {
-            ...edge,
-            style: {
-              ...edge.style,
-              stroke: newColor,
-            },
-          };
-        }
-        return edge;
-      })
-    );
+    updateEdgeColor(id, newColor);
   };
 
   const handleMouseEnter = () => {

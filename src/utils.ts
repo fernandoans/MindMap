@@ -1,4 +1,4 @@
-import { Position, InternalNode, Node } from '@xyflow/react';
+import { Position, InternalNode, Node, Edge } from '@xyflow/react';
 
 function getNodeIntersection(
   intersectionNode: InternalNode<Node>,
@@ -84,58 +84,17 @@ export function getEdgeParams(
   };
 }
 
-export function createNodesAndEdges() {
-  const nodes = [];
-  const edges = [];
-  const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-
-  nodes.push({
-    id: 'target',
-    type: 'textUpdater',
-    data: { label: 'Target' },
-    position: center,
-  });
-
-/*
-  nodes.push({
-    id: '10',
-    type: 'textUpdater',
-    data: { label: 'Solto' },
-    position: center,
-  });
-
-  for (let i = 0; i < 10; i++) {
-    const degrees = i * (360 / 10);
-    const radians = degrees * (Math.PI / 180);
-    const x = 550 * Math.cos(radians) + center.x;
-    const y = 550 * Math.sin(radians) + center.y;
-
-    nodes.push({
-      id: `${i}`,
+export function createNodesAndEdges(): { nodes: Node[]; edges: Edge[] } {
+  const nodes: Node[] = [
+    {
+      id: 'root-1',
       type: 'textUpdater',
-      data: {
-        label:
-          'lorem ipsum dolor sit amet lorem ipsum dolor lorem ipsum dolor sit amet lorem ipsum dolor lorem ipsum dolor sit amet lorem ipsum dolor lorem ipsum dolor sit amet lorem ipsum dolor lorem ipsum dolor sit amet lorem ipsum dolor',
-      },
-      position: { x, y },
-    });
-
-    edges.push({
-      id: `edge-${i}`,
-      target: 'target',
-      source: `${i}`,
-      type: 'floating',
-    });
-  }
-*/
-  edges.push({
-    id: 'edge-conect',
-    target: '8',
-    source: '10',
-    type: 'floating',
-  });
-  console.log(nodes);
-  console.log(edges);
+      data: { label: 'Tópico Central' },
+      position: { x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 - 100 },
+      selected: true,
+    },
+  ];
+  const edges: Edge[] = [];
 
   return { nodes, edges };
 }

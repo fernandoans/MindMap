@@ -1,25 +1,17 @@
-import { useCallback } from 'react';
 import {
   ReactFlow,
   Controls,
   BackgroundVariant,
   Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
   ReactFlowProvider,
-  Connection,
-  reconnectEdge
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 import TextUpdaterNode from './components/Connector';
-import { createNodesAndEdges } from './utils';
 import FloatingEdge from './components/FloatingEdge';
 import FloatingConnectionLine from './components/FloatingConnectionLine';
-import SaveLoadPanel from './components/SaveLoadPanel'; // Importação do novo painel
-
-const { nodes: initialNodes, edges: initialEdges } = createNodesAndEdges();
+import SaveLoadPanel from './components/SaveLoadPanel';
+import { MindMapProvider, useMindMap } from './context/MindMapContext';
 
 const edgeTypes = {
   floating: FloatingEdge,
@@ -27,55 +19,51 @@ const edgeTypes = {
 
 const nodeTypes = { textUpdater: TextUpdaterNode };
 
-export default function App() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  const onConnect = useCallback(
-    (params: Connection) =>
-      setEdges((eds) =>
-        addEdge(
-          {
-            ...params,
-            id: `${params.source}-${params.target}`,
-            type: 'floating',
-          },
-          eds
-        )
-      ),
-    [setEdges]
-  );
-
-  // Permite arrastar uma linha de conexão já existente para outro handle/nó
-  const onReconnect = useCallback(
-    (oldEdge: any, newConnection: Connection) =>
-      setEdges((els) => reconnectEdge(oldEdge, newConnection, els)),
-    [setEdges]
-  );
+function MindMapFlow() {
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onReconnect,
+    onNodeDragStop,
+  } = useMindMap();
 
   return (
-    <ReactFlowProvider>
-      <div
-        className="floatingedges"
-        style={{ width: '100vw', height: '100vh' }}
+    <div
+      className="floatingedges"
+      style={{ width: '100vw', height: '100vh' }}
+    >
+      <SaveLoadPanel />
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onReconnect={onReconnect}
+        onNodeDragStop={onNodeDragStop}
+        onSelectionDragStop={onNodeDragStop}
+        edgeTypes={edgeTypes}
+        nodeTypes={nodeTypes}
+        connectionLineComponent={FloatingConnectionLine}
+        deleteKeyCode={null}
+        fitView
       >
-        <SaveLoadPanel />
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onReconnect={onReconnect}
-          edgeTypes={edgeTypes}
-          nodeTypes={nodeTypes}
-          connectionLineComponent={FloatingConnectionLine}
-          fitView
-        >
-          <Controls />
-          <Background color="#ccc" variant={BackgroundVariant.Dots} />
-        </ReactFlow>
-      </div>
+        <Controls />
+        <Background color="#ccc" variant={BackgroundVariant.Dots} />
+      </ReactFlow>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ReactFlowProvider>
+      <MindMapProvider>
+        <MindMapFlow />
+      </MindMapProvider>
     </ReactFlowProvider>
   );
 }
